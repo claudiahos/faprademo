@@ -1,62 +1,60 @@
 package command;
 
-public class ApplyMandateOwnerCommand { //hier beginnt es, das wird dem CommandGateway übergeben??
+public class ApplyMandateOwnerCommand {
 
-    private String id;
-   
-    private String lastName;
-    private String firstName;
-    private String address;
-    private String city;
-    private int postalCode;
-    private String phone;
-    private String email;
+	private String id;
 
-    public ApplyMandateOwnerCommand(String id,String lastName, String firstName,  String address, String city,
-                        int postalCode, String phone, String email) {
-        this.id = id;
-       
-        this.lastName = lastName;
-        this.firstName = firstName;
-        this.address = address;
-        this.city = city;
-        this.postalCode = postalCode;
-        this.phone = phone;
-        this.email = email; 
-    }
+	private String lastName;
+	private String firstName;
+	private String address;
+	private String city;
+	private int postalCode;
+	private String phone;
+	private String email;
 
-    public String getId() {
-        return id;
-    }
+	public ApplyMandateOwnerCommand(String id, String lastName, String firstName, String address, String city,
+			int postalCode, String phone, String email) {
+		this.id = id;
 
-   
+		this.lastName = lastName;
+		this.firstName = firstName;
+		this.address = address;
+		this.city = city;
+		this.postalCode = postalCode;
+		this.phone = phone;
+		this.email = email;
+	}
 
-    public String getLastName() {
-        return lastName;
-    }
-    
-    public String getFirstName() {
-        return firstName;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public String getAddress() {
-        return address;
-    }
+	public String getLastName() {
+		return lastName;
+	}
 
-    public String getCity() {
-        return city;
-    }
+	public String getFirstName() {
+		return firstName;
+	}
 
-    public int getPostalCode() {
-        return postalCode;
-    }
+	public String getAddress() {
+		return address;
+	}
 
-    public String getPhone() {
-        return phone;
-    }
+	public String getCity() {
+		return city;
+	}
 
-    public String getEmail() {
-        return email;
-    } 
+	public int getPostalCode() {
+		return postalCode;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public String getEmail() {
+		return email;
+	}
 
 }

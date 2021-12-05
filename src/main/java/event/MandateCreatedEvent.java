@@ -1,11 +1,11 @@
 package event;
 
-public class MandateCreatedEvent {
+public class MandateCreatedEvent {// +
 
 	private final String id;
-	
-	public MandateCreatedEvent (String id){
-		
+
+	public MandateCreatedEvent(String id) {
+
 		this.id = id;
 	}
 

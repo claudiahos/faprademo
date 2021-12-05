@@ -1,6 +1,5 @@
 package aggregates;
 
 public enum AccountStatus {
-    ACTIVE,
-    CLOSED
+	ACTIVE, CLOSED
 }

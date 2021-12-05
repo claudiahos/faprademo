@@ -1,9 +1,12 @@
-package command;
+package event;
 
-public class ApplyAccountOwnerCommand {
+import java.time.LocalDateTime;
 
-	private String id;
+import aggregates.CustomerApplicationStatus;
 
+public class CreateMandateEvent { // +
+
+	private String customerId;
 	private String lastName;
 	private String firstName;
 	private String address;
@@ -11,22 +14,26 @@ public class ApplyAccountOwnerCommand {
 	private int postalCode;
 	private String phone;
 	private String email;
+	private CustomerApplicationStatus status;
+	private LocalDateTime createdAt;
 
-	public ApplyAccountOwnerCommand(String id, String lastName, String firstName, String address, String city,
+	public CreateMandateEvent(String customerId, String lastName, String firstName, String address, String city,
 			int postalCode, String phone, String email) {
-		this.id = id;
-
-		this.lastName = lastName;
-		this.firstName = firstName;
+		this.customerId = customerId;
+		this.firstName = lastName;
+		this.lastName = firstName;
 		this.address = address;
 		this.city = city;
 		this.postalCode = postalCode;
 		this.phone = phone;
 		this.email = email;
+		this.status = CustomerApplicationStatus.PENDING;
+		this.createdAt = LocalDateTime.now();
+
 	}
 
-	public String getId() {
-		return id;
+	public String getCustomerId() {
+		return customerId;
 	}
 
 	public String getLastName() {
@@ -55,6 +62,14 @@ public class ApplyAccountOwnerCommand {
 
 	public String getEmail() {
 		return email;
+	}
+
+	public CustomerApplicationStatus getStatus() {
+		return status;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
 	}
 
 }

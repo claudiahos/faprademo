@@ -1,175 +1,123 @@
 package aggregates;
 
 import org.axonframework.commandhandling.CommandHandler;
-import org.axonframework.eventhandling.EventHandler;
+
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.spring.stereotype.Aggregate;
 
 import command.ApplyAccountOwnerCommand;
 import command.ApplyMandateOwnerCommand;
-import command.CustomerEntity;
+
 import event.AccountCreatedEvent;
-import event.ApplicationApprovedEvent;
-import event.ApplicationRejectedEvent;
+import event.AddMandateEvent;
+import event.CreateAccountEvent;
+import event.CreateCustomerProjectionEvent;
+import event.CreateMandateEvent;
 import event.CustomerCreatedEvent;
 import event.MandateCreatedEvent;
+import components.CustomerProjection;
 
 import static org.axonframework.modelling.command.AggregateLifecycle.apply;
-
-import java.math.BigDecimal;
+import static org.axonframework.modelling.command.AggregateLifecycle.createNew;
 
 @Aggregate
-public class Customer { 
+public class Customer {
 
 	@AggregateIdentifier
 	private String customerId;
-	
-	
- 
-    public Customer() {
-      
-    }
+
+	public Customer() {
+
+	}
+
+	public Customer(String customerId) {
+
+	}
+
 //1. Strang: Account und Mandate erstellen:
-    @CommandHandler 
-    public Customer(ApplyAccountOwnerCommand command) { //kommt von Gateway
-    	
-    	
-        apply(new CustomerCreatedEvent(command.getId(),  command.getLastName(), command.getFirstName(),
-                command.getAddress(), command.getCity(), command.getPostalCode(), command.getPhone(), command.getEmail())); //geht an Accountowner projection
-        
-       apply (new AccountCreatedEvent(command.getId())); //geht an Account, warum? entscheiden: wo wird es gespeichert? Eventstore oder Peristenz??
-       
-       
-    }
- 
-  
-    
- 
-    @CommandHandler //hier wurde der Customer mit Daten im Eventstore gespeichert
-    public Customer(ApplyMandateOwnerCommand command) { //kommtvon Gatewy
-        apply(new CustomerCreatedEvent(command.getId(), command.getLastName(),command.getFirstName(), 
-                command.getAddress(), command.getCity(), command.getPostalCode(), command.getPhone(), command.getEmail())); //geht an Customerprojection
-        
-       apply (new MandateCreatedEvent(command.getId())); //geht an Mandate
-       
-       
-    }
+	@CommandHandler
+	public Customer(ApplyAccountOwnerCommand command) { // Command kommt vom Gateway
 
-    
-    @EventSourcingHandler
-    private void on(CustomerCreatedEvent event) {
-    	
-    	//log customerCreatedEvent
-    	this.customerId = event.getCustomerId();
-    }
-    
-    
-  
-    
- /*
-    
-    
-    //ab hier Artem:
-    @CommandHandler
-    public void handle(ApproveApplicationCommand command) { //kommt von der UI = ApplicationView
-        if (status == CustomerApplicationStatus.PENDING) {
-            apply(new ApplicationApprovedEvent(command.getApplicationFormId()));
-        /*    commandGateway.send(new OpenAccountCommand(idFactory.getId(), idFactory.getId(), firstName, lastName,
-                    address, city, postalCode, phone, email, BigDecimal.ZERO));
-                    */
-/*        }
-    }
+		apply(new CreateCustomerProjectionEvent(command.getId()));
 
-    @CommandHandler
-    public void handle(RejectApplicationCommand command) { //kommt von der UI = ApplicationView
-        if (status == ApplicationFormStatus.PENDING) {
-            apply(new ApplicationRejectedEvent(command.getApplicationFormId()));
-            // TODO: send rejection notification to customer
-        }
-    }
+		apply(new CreateAccountEvent(command.getId(), command.getLastName(), command.getFirstName(),
+				command.getAddress(), command.getCity(), command.getPostalCode(), command.getPhone(),
+				command.getEmail()));
 
-    @EventSourcingHandler
-    public void on(ApplicationReceivedEvent event) {
-        applicationFormId = event.getApplicationFormId();
-        firstName = event.getFirstName();
-        lastName = event.getLastName();
-        address = event.getAddress();
-        city = event.getCity();
-        postalCode = event.getPostalCode();
-        phone = event.getPhone();
-        email = event.getEmail();
-        status = event.getStatus();
-    }
+	}
 
-    @EventSourcingHandler
-    public void on(ApplicationApprovedEvent event) {
-        status = ApplicationFormStatus.APPROVED;
-    }
+	@CommandHandler
+	public Customer(ApplyMandateOwnerCommand command) { // kommt von Gateway
 
-    @EventSourcingHandler
-    public void on(ApplicationRejectedEvent event) {
-        status = ApplicationFormStatus.REJECTED;
-    }
-*/
-    
-    
-    
-    
-    
-    
-   /* 
-    //ab hier Artem:
-    @CommandHandler
-    public void handle(ApproveApplicationCommand command) { //kommt von der UI = ApplicationView
-        if (status == CustomerApplicationStatus.PENDING) {
-            apply(new ApplicationApprovedEvent(command.getApplicationFormId()));
-        /*    commandGateway.send(new OpenAccountCommand(idFactory.getId(), idFactory.getId(), firstName, lastName,
-                    address, city, postalCode, phone, email, BigDecimal.ZERO));
-                    */
-/*        }
-    }
+		apply(new CreateCustomerProjectionEvent(command.getId()));
+		
+		apply(new CreateMandateEvent(command.getId(), command.getLastName(), command.getFirstName(),
+				command.getAddress(), command.getCity(), command.getPostalCode(), command.getPhone(),
+				command.getEmail()));
+		
+		
+	}
 
-    @CommandHandler
-    public void handle(RejectApplicationCommand command) { //kommt von der UI = ApplicationView
-        if (status == ApplicationFormStatus.PENDING) {
-            apply(new ApplicationRejectedEvent(command.getApplicationFormId()));
-            // TODO: send rejection notification to customer
-        }
-    }
+	@EventSourcingHandler
+	private void handle(CreateCustomerProjectionEvent event) {
 
-    @EventSourcingHandler
-    public void on(ApplicationReceivedEvent event) {
-        applicationFormId = event.getApplicationFormId();
-        firstName = event.getFirstName();
-        lastName = event.getLastName();
-        address = event.getAddress();
-        city = event.getCity();
-        postalCode = event.getPostalCode();
-        phone = event.getPhone();
-        email = event.getEmail();
-        status = event.getStatus();
-    }
+		try {
+			createNew(CustomerProjection.class, () -> new CustomerProjection(event.getId()));// CustomerProjection wird
+																								// erstellt
+		} catch (Exception e) {
 
-    @EventSourcingHandler
-    public void on(ApplicationApprovedEvent event) {
-        status = ApplicationFormStatus.APPROVED;
-    }
+			e.printStackTrace();
+		}
+	}
+	// log customerprojectionevent
 
-    @EventSourcingHandler
-    public void on(ApplicationRejectedEvent event) {
-        status = ApplicationFormStatus.REJECTED;
-    }
-*/
-    
-    //Ende Artem
-    
- 
-    
-    
-    
-    
-    
-    
+	@EventSourcingHandler
+	private void handle(CreateAccountEvent event) {
+
+		try {
+			createNew(Account.class, () -> new Account(event.getCustomerId())); // Account wird mit Id erstellt
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		// log accountCreatedEvent
+
+		apply(new AccountCreatedEvent(event.getCustomerId())); // geht an Account
+
+		apply(new CustomerCreatedEvent(event.getCustomerId(), event.getLastName(), event.getFirstName(),
+				event.getAddress(), event.getCity(), event.getPostalCode(), event.getPhone(), event.getEmail())); // geht
+																													// an
+																													// CustomerProjection
+
+	}
+
+	@EventSourcingHandler
+	private void handle(CreateMandateEvent event) {
+
+		try {
+			createNew(Mandate.class, () -> new Mandate(event.getCustomerId())); // Mandate wird erstellt
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+
+		apply(new CustomerCreatedEvent(event.getCustomerId(), event.getLastName(), event.getFirstName(),
+				event.getAddress(), event.getCity(), event.getPostalCode(), event.getPhone(), event.getEmail())); // geht
+																													// an
+																													// Customerprojection
+
+		apply(new MandateCreatedEvent(event.getCustomerId())); // geht an Mandate
+		
+		apply (new AddMandateEvent(event.getCustomerId())); //sendet Mandate-id an account
+
+	}
+
+	@EventSourcingHandler // wer instanziiert das Customerobjekt?
+	private void on(CustomerCreatedEvent event) {
+
+		// log customerCreatedEvent
+		this.customerId = event.getCustomerId();
+	}
 
 }
