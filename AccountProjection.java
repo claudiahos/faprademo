@@ -1,101 +1,53 @@
-package query;
+package components;
 
+import org.axonframework.eventhandling.EventHandler;
 
-
-import org.axonframework.eventsourcing.EventSourcingHandler;
-import org.axonframework.queryhandling.QueryHandler;
-import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.springframework.stereotype.Component;
 
-
 import command.AccountEntity;
+import command.TransactionEntity;
 
-import event.BalanceChangedEvent;
 import event.NewBalanceEvent;
+import event.TransactionCreatedEvent;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class AccountProjection {
 
-    private final Map<String, AccountEntity> accountStorage = new HashMap<>();
+	private final Map<String, AccountEntity> accountStorage = new HashMap<>();
+	private final Map<String, List<TransactionEntity>> storage = new HashMap<>();
 
-  
-    private final QueryUpdateEmitter queryUpdateEmitter;
+	public AccountProjection() {
+	}
 
-    public AccountProjection(QueryUpdateEmitter queryUpdateEmitter) {
-        this.queryUpdateEmitter = queryUpdateEmitter;
-    }
+	public AccountProjection(String id) {
 
- 
-    @EventSourcingHandler
-    public void on(NewBalanceEvent event) {
-        AccountEntity account = accountStorage.get(event.getId());
-        
-        
-        account.setBalance(event.getAmount()); //neuer Kontostand wird gespeichert ->hier könnte etwas falsch sein!
-     
+	}
 
-     /*   queryUpdateEmitter.emit(AccountQuery.class, query -> event.getAccountId().equals(query.getAccountId()),
-                new AccountResponse(account.getAccountId(), account.getBalance(), account.getStatus()));
+	@EventHandler
+	public void on(NewBalanceEvent event) { // neuer Kontostand wird gespeichert
+		AccountEntity account = accountStorage.get(event.getId());
 
-        emitSummaryUpdate();  */
-    }
+		account.setBalance(event.getAmount());
 
- /*   @EventSourcingHandler
-    public void on(AccountClosedEvent event) { //woher kommt das?
-        AccountEntity account = accountStorage.get(event.getAccountId());
-        account.setStatus(AccountStatus.CLOSED);
+	}
 
-        queryUpdateEmitter.emit(AccountQuery.class, query -> event.getAccountId().equals(query.getAccountId()),
-                new AccountResponse(account.getAccountId(), account.getBalance(), account.getStatus()));
+	@EventHandler
+	public void on(TransactionCreatedEvent event) { // speichert Transactions
+		TransactionEntity transaction = new TransactionEntity(event.getTransactionId(), event.getFrom(), event.getTo(),
+				event.getValue(), event.getType());
+		saveTransaction(transaction.getFrom(), transaction);
+		saveTransaction(transaction.getTo(), transaction);
+	}
 
-        emitSummaryUpdate();
-    }
-*/
+	public void saveTransaction(String accountId, TransactionEntity transaction) {
+		if (storage.containsKey(accountId)) {
+			storage.get(accountId).add(transaction);
+		} else {
+			storage.put(accountId, new ArrayList<>(List.of(transaction)));
+		}
 
-    @QueryHandler
-    public AccountResponse handle(AccountQuery query) { //holt AccountID, Balance und status
-       AccountEntity account = accountStorage.get(query.getAccountId());
-        return new AccountResponse(account.getId(), account.getBalance(), account.getStatus());
-    }
-    
-
-    @QueryHandler
-    public List<AccountResponse> handle(AccountSummaryQuery query) {
-        return getAccountSummary(); //gibt eine Liste mit AccountResponses zurück
-    }
-
-    private List<AccountResponse> getAccountSummary() {
-        return accountStorage.values().stream()
-                .map(account -> new AccountResponse(account.getId(), account.getBalance(), account.getStatus()))
-                .collect(Collectors.toList());
-    }
-
-    private void emitSummaryUpdate() {
-        queryUpdateEmitter.emit(AccountSummaryQuery.class, Objects::nonNull, getAccountSummary());
-    }
-    
-    
-    
-    
-    
-    
-   
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+	}
 
 }
